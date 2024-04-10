@@ -1,0 +1,71 @@
+// app.js
+
+const fs = require('fs');
+const notesFile = 'notes.json';
+
+function loadNotes() {
+    try {
+        const dataBuffer = fs.readFileSync(notesFile);
+        const dataJSON = dataBuffer.toString();
+        return JSON.parse(dataJSON);
+    } catch (e) {
+        return [];
+    }
+}
+
+function saveNotes(notes) {
+    const dataJSON = JSON.stringify(notes, null, 4);
+    fs.writeFileSync(notesFile, dataJSON);
+}
+
+function listNotes() {
+    const notes = loadNotes();
+    console.log('Your notes:');
+    notes.forEach((note, index) => console.log(`${index + 1}. ${note}`));
+}
+
+function addNote(note) {
+    const notes = loadNotes();
+    notes.push(note);
+    saveNotes(notes);
+    console.log('Note added!');
+}
+
+function deleteNote(index) {
+    let notes = loadNotes();
+    if (index > 0 && index <= notes.length) {
+        notes = notes.filter((_, noteIndex) => noteIndex !== index - 1);
+        saveNotes(notes);
+        console.log('Note deleted!');
+    } else {
+        console.log('Invalid note index.');
+    }
+}
+
+// Processing command line arguments
+const command = process.argv[2];
+
+switch (command) {
+    case 'list':
+        listNotes();
+        break;
+    case 'add':
+        const note = process.argv[3];
+        if (!note) {
+            console.log('Please provide a note after "add" command.');
+        } else {
+            addNote(note);
+        }
+        break;
+    case 'delete':
+        const index = parseInt(process.argv[3]);
+        if (isNaN(index)) {
+            console.log('Please provide a valid note index after "delete" command.');
+        } else {
+            deleteNote(index);
+        }
+        break;
+    default:
+        console.log('Usage: node app.js [list|add|delete] [note or index]');
+}
+
